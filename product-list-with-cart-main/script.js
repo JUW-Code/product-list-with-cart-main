@@ -1,13 +1,9 @@
-// Product data
-const products = {
-
-}
- 
 const productList = document.getElementById("product-list");
 const cartItems = document.getElementById("cart-items");
 const cartCount = document.getElementById("cart-count");
 const totalPriceEl = document.getElementById("total-price");
 const cartTotalBox = document.getElementById("cart-total");
+
 
 let cart = [];
 
