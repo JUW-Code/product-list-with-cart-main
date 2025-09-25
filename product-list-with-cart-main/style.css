@@ -122,6 +122,8 @@ body {
 
 .cart-items {
   min-height: 150px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .cart-item {
@@ -195,10 +197,10 @@ body {
 .add-btn .icon:hover {
   filter: brightness(0.8);
 }
-/* Responsive */
+
 @media (max-width: 768px) {
   body {
-    padding: 1rem;
+    padding: 0.5rem1rem;
   }
   .container {
     flex-direction: column;
@@ -209,5 +211,8 @@ body {
   .cart {
     margin-top: 2rem;
   }
+  .add-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+  }
 }
-/* End of CSS */

@@ -1,61 +1,88 @@
-const productList = document.getElementById("product-list");
-const cartItems = document.getElementById("cart-items");
-const cartCount = document.getElementById("cart-count");
-const totalPriceEl = document.getElementById("total-price");
-const cartTotalBox = document.getElementById("cart-total");
+// Select elements
+const cartItemsContainer = document.getElementById('cart-items');
+const cartCount = document.getElementById('cart-count');
+const cartTotal = document.getElementById('cart-total');
+const totalPriceElem = document.getElementById('total-price');
 
+// Initialize cart object
+let cart = {}; // {id: {name, price, quantity}}
 
-let cart = [];
+// Helper: format price
+const formatPrice = price => parseFloat(price).toFixed(2);
 
-// Render products
-products.forEach(product => {
-  const div = document.createElement("div");
-  div.classList.add("product");
-  div.innerHTML = `
-    <img src="${product.image}" alt="${product.name}">
-    <div class="product-info">
-      <p class="price">$${product.price.toFixed(2)}</p>
-      <h4>${product.name}</h4>
-      <button class="add-btn" data-id="${product.id}">Add to Cart</button>
-    </div>
-  `;
-  productList.appendChild(div);
-});
-
-// Add to cart
-document.querySelector(".add-btn").forEach(button=> {
-    button.addEventListener("click", () => {
-        const id = button.dataset.id;
-        const name = button.dataset.name;
-        const price = parseFloat(button.dataset.price);
-        const existing = cart.find(item => item.id === id);
-        if (existing) {
-            existing.qty++;
-        } else {
-         cart.push({id, name, price, qty: 1});
-        }
-        updateCart();
-    })
-})
-
+// Update Cart UI
 function updateCart() {
-  cartItems.innerHTML = "";
-  if (cart.length === 0) {
-    cartItems.innerHTML = <p class="empty">Your added items will appear here</p>;
-    cartTotalBox.classList.add("hidden");
-  } else {
-    cart.forEach(item => {
-      const div = document.createElement("div");
-      div.classList.add("cart-item");
-      div.innerHTML = `
-        <span>${item.name} (x${item.qty})</span>
-        <span>$${(item.price * item.qty).toFixed(2)}</span>
-      `;
-      cartItems.appendChild(div);
-    });
-    cartTotalBox.classList.remove("hidden");
+  cartItemsContainer.innerHTML = '';
+  let total = 0;
+  let itemCount = 0;
+
+  if (Object.keys(cart).length === 0) {
+    cartItemsContainer.innerHTML = '<p class="empty">Your added items will appear here</p>';
+    cartTotal.classList.add('hidden');
+    cartCount.textContent = 0;
+    return;
   }
 
-  cartCount.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
-  totalPriceEl.textContent = cart.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2);
+  for (let id in cart) {
+    const item = cart[id];
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+    itemCount += item.quantity;
+
+    const cartItem = document.createElement('div');
+    cartItem.className = 'cart-item';
+    cartItem.innerHTML = `
+      <span>${item.name} x ${item.quantity}</span>
+      <span>$${formatPrice(itemTotal)}</span>
+    `;
+    cartItemsContainer.appendChild(cartItem);
+  }
+
+  cartCount.textContent = itemCount;
+  totalPriceElem.textContent = formatPrice(total);
+  cartTotal.classList.remove('hidden');
 }
+
+// Add event listeners to all product buttons
+document.querySelectorAll('.add-btn').forEach(btn => {
+  const id = btn.dataset.id;
+  const name = btn.dataset.name;
+  let price = parseFloat(btn.dataset.price.replace('$',''));
+
+  // Quantity control inside button
+  let quantity = 1;
+
+  // Check if button has increment/decrement icons
+  const incrementIcon = btn.querySelector('.icon:nth-child(1)');
+  const decrementIcon = btn.querySelector('.icon:nth-child(3)');
+
+  // Increment
+  if (incrementIcon) {
+    incrementIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      quantity += 1;
+      btn.innerHTML = `${incrementIcon.outerHTML} ${quantity} ${decrementIcon.outerHTML}`;
+    });
+  }
+
+  // Decrement
+  if (decrementIcon) {
+    decrementIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (quantity > 1) quantity -= 1;
+      btn.innerHTML = `${incrementIcon.outerHTML} ${quantity} ${decrementIcon.outerHTML}`;
+    });
+  }
+
+  // Add to Cart click
+  btn.addEventListener('click', () => {
+    if (!cart[id]) {
+      cart[id] = { name, price, quantity };
+    } else {
+      cart[id].quantity += quantity;
+    }
+
+    quantity = 1; // reset local quantity
+    updateCart();
+  });
+});
